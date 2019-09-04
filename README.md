@@ -27,6 +27,10 @@ Python code automate bing search to get daily rewards
     git clone https://github.com/pmahend1/BingRewards
     ```
 
+- Replace `your-email-id` in the code with your enail id.
+  
+- Replace `your_password` in the code with your password.
+
 - Run
 
     ```shell
