@@ -1,11 +1,13 @@
 # BingRewards
 
-Python code automate bing search to get daily rewards
+Code automate bing search to get daily search rewards.
 
 1. Python
 1. .NetCore(C#)
 
-## Python 
+## Python
+
+Check out Medium blog [Earn 500+ daily Microsoft rewards points automatically with a simple Python program](https://medium.com/@prateekrm/earn-500-daily-microsoft-rewards-points-automatically-with-a-simple-python-program-38fe648ff2a9)
 
 ### Prerequisites
 
