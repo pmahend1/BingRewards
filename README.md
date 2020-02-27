@@ -48,6 +48,8 @@ This will run for both PC Search and Mobile points until all the points are gain
 
 - Build the project via Visual Studio 2019 
 
+- Edit **Resources.json** file to point to respective locations for Edgium. Be sure to have right version of Edgium driver downloaded and pointed based on your existing Edgium version. You can download [Edgium driver from here](https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/)
+
 - Run program 
 
     ```powershell
@@ -56,4 +58,8 @@ This will run for both PC Search and Mobile points until all the points are gain
 
 ## Known Issues
 
-- Since release of Edgium(New Microsoft Edge based on Chromium) and subsequent releases of web drivers there is an issue with Selenium driver run.
+- Since release of Edgium(New Microsoft Edge based on Chromium) and subsequent releases of web drivers there may be an issue with Selenium driver run sometimes. Please [raise an issue](https://github.com/pmahend1/BingRewards/issues) to report them.
+
+## Binaries
+
+- You can download latest binaries from [Releases](https://github.com/pmahend1/BingRewards/releases) and run on Windows. If you build on Linux it should have similar files.
