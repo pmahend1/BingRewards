@@ -218,7 +218,7 @@ namespace MSRewards
         async Task EdgeSearch(int current, int target)
         {
 
-            using StreamReader r = new StreamReader(@"../../../Resources.json");
+            using StreamReader r = new StreamReader("Resources.json");
 
             string json = r.ReadToEnd();
             var jsonObject = JObject.Parse(json);
@@ -226,7 +226,7 @@ namespace MSRewards
             r.Close();
             if (jsonObject != null)
             {
-                var edgeBrowser= JsonConvert.DeserializeObject<EdgeBrowser>(jsonObject["Edge"].ToString());
+                var edgeBrowser = JsonConvert.DeserializeObject<EdgeBrowser>(jsonObject["Edge"].ToString());
 
 
                 var service = EdgeDriverService.CreateDefaultService(edgeBrowser.DriverLocation, edgeBrowser.DriverExecutableName);
