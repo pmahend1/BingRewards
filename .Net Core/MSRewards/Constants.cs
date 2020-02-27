@@ -27,7 +27,7 @@ namespace MSRewards
 
         public const string PointsBreakdownUrl = "https://account.microsoft.com/rewards/pointsbreakdown";
 
-
+        public const string UserPointsBreakdownId = "userPointsBreakdown";
     }
 
 }

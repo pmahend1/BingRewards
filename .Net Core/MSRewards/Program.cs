@@ -1,10 +1,13 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.Firefox;
+using OpenQA.Selenium.Remote;
 using OpenQA.Selenium.Support.UI;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -13,7 +16,7 @@ namespace MSRewards
     class Program
     {
         static string email, password;
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             if (args.Length != 2)
             {
@@ -25,7 +28,8 @@ namespace MSRewards
             password = args[1];
             try
             {
-                new Program().RunProcess();
+                await new Program().RunProcess();
+
             }
             catch (Exception ex)
             {
@@ -50,134 +54,126 @@ namespace MSRewards
         }
 
 
-        void Login(IWebDriver driverlocal, WebDriverWait localwait)
+        async Task Login(IWebDriver driverlocal, WebDriverWait localwait)
         {
+
             //page 1
             driverlocal.Navigate().GoToUrl(Constants.LiveLoginUrl);
-            localwait.Until(d => d.FindElement(By.Name(Constants.LoginEntryName)));
+            localwait?.Until(d => d.FindElement(By.Name(Constants.LoginEntryName)));
             var username = driverlocal.FindElement(By.Name(Constants.LoginEntryName));
             username.SendKeys(email);
             username.SendKeys(Keys.Enter);
-
             //page2
-            localwait.Until(d => d.FindElement(By.Name(Constants.PasswordEntryName)));
+            localwait?.Until(d => d.FindElement(By.Name(Constants.PasswordEntryName)));
+
+            await Task.Delay(3000);
+
             var passwordEntry = driverlocal.FindElement(By.Name(Constants.PasswordEntryName));
+            passwordEntry.SendKeys(password);
+
+
             var checkbox = driverlocal.FindElement(By.Name(Constants.CheckboxName));
             checkbox.Click();
-
-            passwordEntry.SendKeys(password);
             passwordEntry.SendKeys(Keys.Enter);
 
-            localwait.Until(e => e.Title.Equals(Constants.RewardsPageTitle));
+            await Task.Delay(3000);
+
+            localwait?.Until(e => e.Title.Equals(Constants.RewardsPageTitle));
             driverlocal.SwitchTo().DefaultContent();
-            Task.Delay(3000);
+
+            await Task.Delay(3000);
+
         }
 
-        void RunProcess()
+        async Task RunProcess()
         {
             var options = new FirefoxOptions();
             var json = DownloadJsonData<List<string>>(Constants.WordsListUrl);
-            Dictionary<string, (int current, int available)> v = new Dictionary<string, (int current, int available)>();
+            Dictionary<string, (int current, int available)> pointsTuple = new Dictionary<string, (int current, int available)>();
             using IWebDriver driver = new FirefoxDriver();
-            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30));
 
-            Login(driver, wait);
-            var result = CheckBreakDown(driver);
+            await Login(driver, wait);
+            var result = CheckBreakDown(driver, wait);
 
             if (result.Count > 0)
             {
-                v.Add("pcsearch", result[0]);
-                v.Add("mobilesearch", result[1]);
-                v.Add("edgesearch", result[2]);
+                pointsTuple.Add("pcsearch", result[0]);
+                pointsTuple.Add("mobilesearch", result[1]);
+                pointsTuple.Add("edgesearch", result[2]);
 
-                foreach (var item in v)
+                foreach (var item in pointsTuple)
                     Console.WriteLine("{0}: {1}/{2}", item.Key, item.Value.current, item.Value.available);
 
                 try
                 {
                     var randy = new Random();
 
-                    var item = v["pcsearch"];
-                    var (c, a) = item;
-                    while (c < a)
+                    var item = pointsTuple["pcsearch"];
+                    var (currentPC, availablePC) = item;
+                    if (currentPC < availablePC)
                     {
+                        Console.WriteLine("Running PC Search");
+                        driver.Navigate().GoToUrl(Constants.BingSearchURL + "PC Search");
 
-                        for (int i = c; i < a; i += 5)
+                        driver.FindElement(By.Id("id_n")).Click();
+                        while (currentPC < availablePC)
                         {
+
                             var index = randy.Next(json.Count);
-
                             Search(driver, wait, Constants.BingSearchURL + json[index]);
+                            currentPC += 5;
+                            if (currentPC >= availablePC)
+                            {
+                                var currentBreakDown = CheckBreakDown(driver, wait);
+                                currentPC = currentBreakDown[0].x;
+                                Console.WriteLine("{0} points of {1} completed", currentBreakDown[0].x, currentBreakDown[0].y);
+                            }
+
+
                         }
-                        var currentBreakDown = CheckBreakDown(driver);
-
-                        currentBreakDown.ForEach(x => Console.WriteLine("{1}/{2}", x.x, x.y));
-
-                        if (currentBreakDown[0].x < currentBreakDown[0].y)
-                            c = currentBreakDown[0].x;
-                        else
-                            break;
-
                     }
-                    driver.Dispose();
 
-                    var mob = v["mobilesearch"];
+                    driver.Close();
+                    driver?.Dispose();
+                    var mob = pointsTuple["mobilesearch"];
 
                     var (currentMobile, availableMobile) = mob;
 
                     if (currentMobile < availableMobile)
                     {
+                        Console.WriteLine("Running Mobile Search");
                         options.SetPreference(Constants.UserAgentKey, Constants.MobileUserAgent);
                         options.SetPreference(Constants.PrivateBrowingKey, true);
                         using var driverM = new FirefoxDriver(options);
                         WebDriverWait waitM = new WebDriverWait(driverM, TimeSpan.FromSeconds(10));
-                        Login(driverM, waitM);
+                        await Login(driverM, waitM);
 
                         driverM.Navigate().GoToUrl(Constants.BingSearchURL + "Mobile Search");
-                        driverM.Navigate().GoToUrl(Constants.BingSearchURL + "Get me my rewards");
 
-                        while (currentMobile <= availableMobile)
+                        while (currentMobile < availableMobile)
                         {
+                            var index = randy.Next(json.Count);
+                            Search(driverM, waitM, Constants.BingSearchURL + json[index]);
+                            currentMobile += 5;
 
-                            for (int i = currentMobile; i <= availableMobile; i += 5)
+                            if (currentMobile >= availableMobile)
                             {
-                                var index = randy.Next(json.Count);
-
-                                Search(driverM, waitM, Constants.BingSearchURL + json[index]);
-                            }
-                            var currentBreakDown = CheckBreakDown(driverM);
-                            currentBreakDown.ForEach(x => Console.WriteLine("{1}/{2}", x.x, x.y));
-                            if (currentBreakDown[1].x < currentBreakDown[1].y)
+                                var currentBreakDown = CheckBreakDown(driverM, waitM);
                                 currentMobile = currentBreakDown[1].x;
-                            else
-                                break;
+                                Console.WriteLine("{0} points of {1} completed", currentBreakDown[1].x, currentBreakDown[1].y);
+                            }
 
                         }
-                        driverM.Dispose();
+                        driverM.Close();
+                        driverM?.Dispose();
                     }
 
-                    var (edgeCur, edgeTot) = v["edgesearch"];
+                    var (edgeCur, edgeTot) = pointsTuple["edgesearch"];
                     if (edgeCur < edgeTot)
                     {
-                        using var edgeDriver = new EdgeDriver();
-                        var edgeWait = new WebDriverWait(edgeDriver, TimeSpan.FromSeconds(10));
-
-                        Login(edgeDriver, edgeWait);
-
-                        while (edgeCur < edgeTot)
-                        {
-                            for (int i = edgeCur; i <= edgeTot; i += 5)
-                            {
-                                var index = randy.Next(json.Count);
-                                Search(edgeDriver, edgeWait, Constants.BingSearchURL + json[index]);
-                            }
-                            var currentBreakDown = CheckBreakDown(edgeDriver);
-                            currentBreakDown.ForEach(x => Console.WriteLine("{1}/{2}", x.x, x.y));
-                            if (currentBreakDown[2].x < currentBreakDown[2].y)
-                                edgeCur = currentBreakDown[2].x;
-                            else
-                                break;
-                        }
-                        edgeDriver.Dispose();
+                        Console.WriteLine("Running Edge Search");
+                        await EdgeSearch(edgeCur, edgeTot);
                     }
 
                 }
@@ -188,13 +184,15 @@ namespace MSRewards
             }
 
         }
-        private List<(int x, int y)> CheckBreakDown(IWebDriver webDriver)
+        private List<(int x, int y)> CheckBreakDown(IWebDriver webDriver, WebDriverWait waiter)
         {
             var result = new List<(int x, int y)>();
             webDriver.Navigate().GoToUrl(new Uri(Constants.PointsBreakdownUrl));
             webDriver.SwitchTo().DefaultContent();
             webDriver.SwitchTo().ActiveElement();
-            var userPointsBreakdown = webDriver.FindElement(By.Id("userPointsBreakdown"));
+
+            waiter.Until(d => d.FindElement(By.Id(Constants.UserPointsBreakdownId)));
+            var userPointsBreakdown = webDriver.FindElement(By.Id(Constants.UserPointsBreakdownId));
 
             var pointDetailsList = userPointsBreakdown.FindElements(By.XPath(".//p[@class='pointsDetail c-subheading-3 ng-binding']"));
             foreach (var pointDetail in pointDetailsList)
@@ -216,7 +214,61 @@ namespace MSRewards
             return result;
         }
 
+        [Obsolete]
+        async Task EdgeSearch(int current, int target)
+        {
 
+            using StreamReader r = new StreamReader(@"../../../Resources.json");
+
+            string json = r.ReadToEnd();
+            var jsonObject = JObject.Parse(json);
+
+            r.Close();
+            if (jsonObject != null)
+            {
+                var edgeBrowser= JsonConvert.DeserializeObject<EdgeBrowser>(jsonObject["Edge"].ToString());
+
+
+                var service = EdgeDriverService.CreateDefaultService(edgeBrowser.DriverLocation, edgeBrowser.DriverExecutableName);
+                service.UseSpecCompliantProtocol = true;
+
+                service.Start();
+
+                var caps = new DesiredCapabilities(new Dictionary<string, object>()
+                    {
+                        { "ms:edgeOptions", new Dictionary<string, object>() {
+                            {  "binary", edgeBrowser.ExecutableName }
+                        }}
+                    });
+
+                var edgeDriver = new RemoteWebDriver(service.ServiceUrl, caps);
+
+                var edgeWait = new WebDriverWait(edgeDriver, TimeSpan.FromSeconds(15));
+                await Task.Delay(3000);
+                await Login(edgeDriver, edgeWait);
+
+                Search(edgeDriver, edgeWait, Constants.BingSearchURL + "Give me Edge points");
+                edgeDriver.FindElement(By.Id("id_p"))?.Click();
+
+
+                while (current < target)
+                {
+
+                    Search(edgeDriver, edgeWait, Constants.BingSearchURL + "Tick Tick " + current);
+                    current += 5;
+                    if (current >= target)
+                    {
+                        var currentBreakDown = CheckBreakDown(edgeDriver, edgeWait);
+                        current = currentBreakDown[2].x;
+                        Console.WriteLine("{0} points of {1} completed", currentBreakDown[2].x, currentBreakDown[2].y);
+                    }
+
+                }
+                edgeDriver.Close();
+                service.Dispose();
+            }
+
+        }
         private void Search(IWebDriver driver, WebDriverWait wait, string url)
         {
             try
