@@ -7,7 +7,7 @@ Code automate bing search to get daily search rewards.
 
 ## Python
 
-Check out Medium blog [Earn 500+ daily Microsoft rewards points automatically with a simple Python program](https://medium.com/@prateekrm/earn-500-daily-microsoft-rewards-points-automatically-with-a-simple-python-program-38fe648ff2a9)
+Check out Medium blog [Earn 500+ daily Microsoft rewards points automatically with a simple Python program](https://medium.com/@prateekrm/earn-500-daily-microsoft-rewards-points-automatically-with-a-simple-python-program-38fe648ff2a9) or [GitHub blog](https://pmahend1.github.io/BingRewards/)
 
 ### Prerequisites
 
