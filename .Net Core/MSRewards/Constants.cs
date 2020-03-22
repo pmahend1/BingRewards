@@ -2,7 +2,6 @@ namespace MSRewards
 {
     public static class Constants
     {
-
         public const string LiveLoginUrl = "https://login.live.com";
 
         public const string LoginEntryName = "loginfmt";
@@ -28,6 +27,7 @@ namespace MSRewards
         public const string PointsBreakdownUrl = "https://account.microsoft.com/rewards/pointsbreakdown";
 
         public const string UserPointsBreakdownId = "userPointsBreakdown";
-    }
 
+        public const string EdgeUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/82.0.4080.0 Safari/537.36 Edg/82.0.453.2";
+    }
 }
