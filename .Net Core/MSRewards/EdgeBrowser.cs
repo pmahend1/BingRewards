@@ -1,6 +1,6 @@
 ﻿namespace MSRewards
 {
-    class EdgeBrowser : Browser
+    internal class EdgeBrowser : Browser
     {
     }
 }

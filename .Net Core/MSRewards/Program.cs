@@ -13,10 +13,12 @@ using System.Threading.Tasks;
 
 namespace MSRewards
 {
-    class Program
+    internal class Program
     {
-        static string email, password;
-        static async Task Main(string[] args)
+        private static string email, password;
+        private List<string> wordList = new List<string>();
+
+        private static void Main(string[] args)
         {
             if (args.Length != 2)
             {
@@ -28,16 +30,14 @@ namespace MSRewards
             password = args[1];
             try
             {
-                await new Program().RunProcess();
-
+                new Program().RunProcess();
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.StackTrace);
             }
-
-
         }
+
         private T DownloadJsonData<T>(string url) where T : new()
         {
             using (var w = new WebClient())
@@ -53,10 +53,8 @@ namespace MSRewards
             }
         }
 
-
-        async Task Login(IWebDriver driverlocal, WebDriverWait localwait)
+        private void Login(IWebDriver driverlocal, WebDriverWait localwait)
         {
-
             //page 1
             driverlocal.Navigate().GoToUrl(Constants.LiveLoginUrl);
             localwait?.Until(d => d.FindElement(By.Name(Constants.LoginEntryName)));
@@ -66,34 +64,32 @@ namespace MSRewards
             //page2
             localwait?.Until(d => d.FindElement(By.Name(Constants.PasswordEntryName)));
 
-            await Task.Delay(3000);
+           // await Task.Delay(3000);
 
             var passwordEntry = driverlocal.FindElement(By.Name(Constants.PasswordEntryName));
             passwordEntry.SendKeys(password);
-
 
             var checkbox = driverlocal.FindElement(By.Name(Constants.CheckboxName));
             checkbox.Click();
             passwordEntry.SendKeys(Keys.Enter);
 
-            await Task.Delay(3000);
+            //await Task.Delay(3000);
 
             localwait?.Until(e => e.Title.Equals(Constants.RewardsPageTitle));
             driverlocal.SwitchTo().DefaultContent();
 
-            await Task.Delay(3000);
-
+            //await Task.Delay(3000);
         }
 
-        async Task RunProcess()
+        private void RunProcess()
         {
             var options = new FirefoxOptions();
-            var json = DownloadJsonData<List<string>>(Constants.WordsListUrl);
+            wordList = DownloadJsonData<List<string>>(Constants.WordsListUrl);
             Dictionary<string, (int current, int available)> pointsTuple = new Dictionary<string, (int current, int available)>();
             using IWebDriver driver = new FirefoxDriver();
-            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30));
+            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(120));
 
-            await Login(driver, wait);
+            Login(driver, wait);
             var result = CheckBreakDown(driver, wait);
 
             if (result.Count > 0)
@@ -119,9 +115,8 @@ namespace MSRewards
                         driver.FindElement(By.Id("id_n")).Click();
                         while (currentPC < availablePC)
                         {
-
-                            var index = randy.Next(json.Count);
-                            Search(driver, wait, Constants.BingSearchURL + json[index]);
+                            var index = randy.Next(wordList.Count);
+                            Search(driver, wait, Constants.BingSearchURL + wordList[index]);
                             currentPC += 5;
                             if (currentPC >= availablePC)
                             {
@@ -129,8 +124,6 @@ namespace MSRewards
                                 currentPC = currentBreakDown[0].x;
                                 Console.WriteLine("{0} points of {1} completed", currentBreakDown[0].x, currentBreakDown[0].y);
                             }
-
-
                         }
                     }
 
@@ -146,15 +139,15 @@ namespace MSRewards
                         options.SetPreference(Constants.UserAgentKey, Constants.MobileUserAgent);
                         options.SetPreference(Constants.PrivateBrowingKey, true);
                         using var driverM = new FirefoxDriver(options);
-                        WebDriverWait waitM = new WebDriverWait(driverM, TimeSpan.FromSeconds(10));
-                        await Login(driverM, waitM);
+                        WebDriverWait waitM = new WebDriverWait(driverM, TimeSpan.FromSeconds(120));
+                        Login(driverM, waitM);
 
                         driverM.Navigate().GoToUrl(Constants.BingSearchURL + "Mobile Search");
 
                         while (currentMobile < availableMobile)
                         {
-                            var index = randy.Next(json.Count);
-                            Search(driverM, waitM, Constants.BingSearchURL + json[index]);
+                            var index = randy.Next(wordList.Count);
+                            Search(driverM, waitM, Constants.BingSearchURL + wordList[index]);
                             currentMobile += 5;
 
                             if (currentMobile >= availableMobile)
@@ -163,7 +156,6 @@ namespace MSRewards
                                 currentMobile = currentBreakDown[1].x;
                                 Console.WriteLine("{0} points of {1} completed", currentBreakDown[1].x, currentBreakDown[1].y);
                             }
-
                         }
                         driverM.Close();
                         driverM?.Dispose();
@@ -173,17 +165,17 @@ namespace MSRewards
                     if (edgeCur < edgeTot)
                     {
                         Console.WriteLine("Running Edge Search");
-                        await EdgeSearch(edgeCur, edgeTot);
-                    }
 
+                        EdgeSearch(edgeCur, edgeTot);
+                    }
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e.StackTrace);
                 }
             }
-
         }
+
         private List<(int x, int y)> CheckBreakDown(IWebDriver webDriver, WebDriverWait waiter)
         {
             var result = new List<(int x, int y)>();
@@ -209,66 +201,96 @@ namespace MSRewards
                 {
                     Console.WriteLine(ex.Message + " \n" + ex.InnerException?.Message);
                 }
-
             }
             return result;
         }
 
-        [Obsolete]
-        async Task EdgeSearch(int current, int target)
+        private void EdgeSearch(int current, int target, bool useFirefox = true)
         {
+            var rand = new Random();
 
-            using StreamReader r = new StreamReader("Resources.json");
-
-            string json = r.ReadToEnd();
-            var jsonObject = JObject.Parse(json);
-
-            r.Close();
-            if (jsonObject != null)
+            if (useFirefox)
             {
-                var edgeBrowser = JsonConvert.DeserializeObject<EdgeBrowser>(jsonObject["Edge"].ToString());
+                var options = new FirefoxOptions();
+                options.SetPreference(Constants.UserAgentKey, Constants.EdgeUserAgent);
+                options.SetPreference(Constants.PrivateBrowingKey, true);
+                using var ffDriverEdge = new FirefoxDriver(options);
+                WebDriverWait waitFFEdge = new WebDriverWait(ffDriverEdge, TimeSpan.FromSeconds(120));
+                Login(ffDriverEdge, waitFFEdge);
 
+                ffDriverEdge.Navigate().GoToUrl(Constants.BingSearchURL + "Give me edge points");
 
-                var service = EdgeDriverService.CreateDefaultService(edgeBrowser.DriverLocation, edgeBrowser.DriverExecutableName);
-                service.UseSpecCompliantProtocol = true;
+                var id_p = ffDriverEdge.FindElement(By.Id("id_p"));
+                if(id_p != null)
+                {
+                    id_p.Click();
+                }
+               
 
-                service.Start();
+                while (current < target)
+                {
+                    Search(ffDriverEdge, waitFFEdge, Constants.BingSearchURL + wordList[rand.Next(wordList.Count)]);
+                    current += 5;
+                    if (current >= target)
+                    {
+                        var currentBreakDown = CheckBreakDown(ffDriverEdge, waitFFEdge);
+                        current = currentBreakDown[2].x;
+                        Console.WriteLine("{0} points of {1} completed", currentBreakDown[2].x, currentBreakDown[2].y);
+                    }
+                }
+                ffDriverEdge.Close();
+            }
+            else
+            {
+                using StreamReader r = new StreamReader("Resources.json");
 
-                var caps = new DesiredCapabilities(new Dictionary<string, object>()
+                string jsonString = r.ReadToEnd();
+                var jsonObject = JObject.Parse(jsonString);
+
+                r.Close();
+
+                if (jsonObject != null)
+                {
+                    var edgeBrowser = JsonConvert.DeserializeObject<EdgeBrowser>(jsonObject["Edge"].ToString());
+
+                    var service = EdgeDriverService.CreateDefaultService(edgeBrowser.DriverLocation, edgeBrowser.DriverExecutableName);
+                    service.UseSpecCompliantProtocol = true;
+
+                    service.Start();
+
+                    var caps = new DesiredCapabilities(new Dictionary<string, object>()
                     {
                         { "ms:edgeOptions", new Dictionary<string, object>() {
                             {  "binary", edgeBrowser.ExecutableName }
                         }}
                     });
 
-                var edgeDriver = new RemoteWebDriver(service.ServiceUrl, caps);
+                    var edgeDriver = new RemoteWebDriver(service.ServiceUrl, caps);
 
-                var edgeWait = new WebDriverWait(edgeDriver, TimeSpan.FromSeconds(15));
-                await Task.Delay(3000);
-                await Login(edgeDriver, edgeWait);
+                    var edgeWait = new WebDriverWait(edgeDriver, TimeSpan.FromSeconds(15));
+                    //await Task.Delay(3000);
+                    Login(edgeDriver, edgeWait);
 
-                Search(edgeDriver, edgeWait, Constants.BingSearchURL + "Give me Edge points");
-                edgeDriver.FindElement(By.Id("id_p"))?.Click();
+                    Search(edgeDriver, edgeWait, Constants.BingSearchURL + "Give me Edge points");
+                    edgeDriver.FindElement(By.Id("id_p"))?.Click();
 
-
-                while (current < target)
-                {
-
-                    Search(edgeDriver, edgeWait, Constants.BingSearchURL + "Tick Tick " + current);
-                    current += 5;
-                    if (current >= target)
+                    while (current < target)
                     {
-                        var currentBreakDown = CheckBreakDown(edgeDriver, edgeWait);
-                        current = currentBreakDown[2].x;
-                        Console.WriteLine("{0} points of {1} completed", currentBreakDown[2].x, currentBreakDown[2].y);
+                        Search(edgeDriver, edgeWait, Constants.BingSearchURL + jsonString[rand.Next(wordList.Count)]);
+                        current += 5;
+                        if (current >= target)
+                        {
+                            var currentBreakDown = CheckBreakDown(edgeDriver, edgeWait);
+                            current = currentBreakDown[2].x;
+                            Console.WriteLine("{0} points of {1} completed", currentBreakDown[2].x, currentBreakDown[2].y);
+                        }
                     }
-
+                    edgeDriver.Close();
+                    service.Dispose();
                 }
-                edgeDriver.Close();
-                service.Dispose();
             }
-
         }
+
         private void Search(IWebDriver driver, WebDriverWait wait, string url)
         {
             try

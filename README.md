@@ -12,17 +12,17 @@ Check out Medium blog [Earn 500+ daily Microsoft rewards points automatically wi
 ### Prerequisites
 
 - Python 3+ 
-- requests
+    - requests
 
-    ```shell
-    pip install requests
-    ```
+        ```shell
+        pip install requests
+        ```
 
-- selenium
+    - selenium
 
-    ```shell
-    pip install selenium
-    ```
+        ```shell
+        pip install selenium
+        ```
 
 - Turn off 2 step verification on Microsoft account.
 
@@ -49,9 +49,9 @@ Check out Medium blog [Earn 500+ daily Microsoft rewards points automatically wi
 This will run for both PC Search and Mobile points until all the points are gained.
 
 - Build the project via Visual Studio 2019 
-
+<!---
 - Edit **Resources.json** file to point to respective locations for Edgium. Be sure to have right version of Edgium driver downloaded and pointed based on your existing Edgium version. You can download [Edgium driver from here](https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/)
-
+-->
 - Run program 
 
     ```powershell
