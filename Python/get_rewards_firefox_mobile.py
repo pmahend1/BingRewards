@@ -17,16 +17,18 @@ print('{0} words selected from {1}'.format(len(words_list), randomlists_url))
 
 
 profile = webdriver.FirefoxProfile()
-profile.set_preference("general.useragent.override","Mozilla/5.0 (Android 6.0.1; Mobile; rv:63.0) Gecko/63.0 Firefox/63.0")
-driver = webdriver.Firefox(firefox_profile=profile, executable_path='geckodriver.exe')
+profile.set_preference("general.useragent.override","Mozilla/5.0 (Android 6.0.1; Mobile; rv:77.0) Gecko/77.0 Firefox/77.0")
+driver = webdriver.Firefox(firefox_profile=profile, executable_path='fullpath-to-geckodriver')
 
 try:
+    driver.get("https://login.live.com/")
+    wait_for(15)
     elem = driver.find_element_by_name('loginfmt')
     elem.clear()
     elem.send_keys("your-email-id") # add your login email id
     elem.send_keys(Keys.RETURN)
     wait_for(5)
-    elem1 = driver.find_element_by_name('your-password')
+    elem1 = driver.find_element_by_name('passwd')
     elem1.clear()
     elem1.send_keys("your_password") # add your password
     elem1.send_keys(Keys.ENTER)
@@ -48,5 +50,5 @@ for num, word in enumerate(words_list):
         print('\t' + driver.find_element_by_tag_name('h2').text)
     except Exception as e1:
         print(e1)
-    wait_for()
+    wait_for(5)
 driver.close()
