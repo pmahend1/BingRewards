@@ -70,4 +70,4 @@ This will run for both PC Search and Mobile points until all the points are gain
 
 ## Binaries
 
-- You can download latest binaries from [Releases](https://github.com/pmahend1/BingRewards/releases) or [GitHub packages](https://github.com/pmahend1/BingRewards/packages/405894) and run on Windows. If you build on Linux it should have similar files.
+- You can download latest binaries from [Releases](https://github.com/pmahend1/BingRewards/releases) run on Windows. If you build on Linux or Mac it should have similar files.
