@@ -12,7 +12,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 
 namespace MSRewards
@@ -21,7 +20,6 @@ namespace MSRewards
     {
         private static async Task RunOptions(Options opts)
         {
-
             email = opts.Email;
             password = opts.Password;
             bool useFirefox = opts.Firefox;
@@ -32,7 +30,6 @@ namespace MSRewards
 
         private static void HandleParseError(IEnumerable<Error> errs)
         {
-
             foreach (var error in errs)
             {
                 Console.WriteLine(error.ToString());
@@ -42,11 +39,12 @@ namespace MSRewards
         private static string email, password;
         private List<string> wordList = new List<string>();
 
-        private static void Main(string[] args)
+        private static async Task Main(string[] args)
         {
-            Parser.Default.ParseArguments<Options>(args)
-                .WithParsed(async(x)=>await RunOptions(x))
-                .WithNotParsed(HandleParseError);
+            var result = Parser.Default.ParseArguments<Options>(args);
+            await result.WithParsedAsync(async (x) => await RunOptions(x));
+            result
+               .WithNotParsed(HandleParseError);
         }
 
         private T DownloadJsonData<T>(string url) where T : new()
@@ -174,24 +172,24 @@ namespace MSRewards
 
         private async Task BingSearch(RewardType rewardType, int current, int target, bool useFirefox = true)
         {
-            var rand = new Random();
-            wordList = DownloadJsonData<List<string>>(Constants.WordsListUrl);
-
-            if (rewardType == RewardType.EdgeBonus || !useFirefox)
+            try
             {
-                using StreamReader r = new StreamReader("Resources.json");
+                var rand = new Random();
+                wordList = DownloadJsonData<List<string>>(Constants.WordsListUrl);
 
-                string jsonString = r.ReadToEnd();
-                var jsonObject = JObject.Parse(jsonString);
-
-                r.Close();
-
-                if (jsonObject != null)
+                if (rewardType == RewardType.EdgeBonus || !useFirefox)
                 {
-                    var edgeBrowser = JsonConvert.DeserializeObject<EdgeBrowser>(jsonObject["Edge"].ToString());
+                    using StreamReader r = new StreamReader("Resources.json");
 
-                    try
+                    string jsonString = r.ReadToEnd();
+                    var jsonObject = JObject.Parse(jsonString);
+
+                    r.Close();
+
+                    if (jsonObject != null)
                     {
+                        var edgeBrowser = JsonConvert.DeserializeObject<EdgeBrowser>(jsonObject["Edge"].ToString());
+
                         var options = new EdgeOptions
                         {
                             UseChromium = true,
@@ -205,7 +203,14 @@ namespace MSRewards
                         await Login(edgeDriver, edgeWait);
 
                         Search(edgeDriver, edgeWait, Constants.BingSearchURL + "Give me Edge points");
-                        edgeDriver.FindElement(By.Id("id_p"))?.Click();
+
+                        await Task.Delay(4000);
+
+                        var id_p = edgeWait.Until(d => d.FindElement(By.Id("id_p")));
+                        if (id_p != null)
+                        {
+                            id_p?.Click();
+                        }
 
                         while (current < target)
                         {
@@ -224,49 +229,53 @@ namespace MSRewards
                         }
                         edgeDriver.Close();
                     }
-                    catch (Exception ex)
+                }
+                //Use Firefox
+                else
+                {
+                    var options = new FirefoxOptions();
+                    if (rewardType == RewardType.Mobile)
+                        options.SetPreference(Constants.UserAgentKey, Constants.EdgeUserAgent);
+
+                    options.SetPreference(Constants.PrivateBrowsingKey, true);
+                    using var firefoxDriver = new FirefoxDriver(options);
+                    WebDriverWait driverWait = new WebDriverWait(firefoxDriver, TimeSpan.FromSeconds(120));
+                    await Login(firefoxDriver, driverWait);
+
+                    firefoxDriver.Navigate().GoToUrl(Constants.BingSearchURL + "Give me edge points");
+
+                    await Task.Delay(4000);
+
+                    var id_p = driverWait.Until(d => d.FindElement(By.Id("id_p")));
+                    if (id_p != null)
                     {
-                        Debug.WriteLine(ex.Message);
+                        id_p.Click();
                     }
-                }
-            }
-            //Use Firefox
-            else
-            {
-                var options = new FirefoxOptions();
-                if (rewardType == RewardType.Mobile)
-                    options.SetPreference(Constants.UserAgentKey, Constants.EdgeUserAgent);
 
-                options.SetPreference(Constants.PrivateBrowsingKey, true);
-                using var ffDriverEdge = new FirefoxDriver(options);
-                WebDriverWait waitFFEdge = new WebDriverWait(ffDriverEdge, TimeSpan.FromSeconds(120));
-                await Login(ffDriverEdge, waitFFEdge);
-
-                ffDriverEdge.Navigate().GoToUrl(Constants.BingSearchURL + "Give me edge points");
-
-                var id_p = ffDriverEdge.FindElement(By.Id("id_p"));
-                if (id_p != null)
-                {
-                    id_p.Click();
-                }
-
-                while (current < target)
-                {
-                    Search(ffDriverEdge, waitFFEdge, Constants.BingSearchURL + wordList[rand.Next(wordList.Count)]);
-                    current += 5;
-                    if (current >= target)
+                    while (current < target)
                     {
-                        var currentBreakDown = CheckBreakDown(ffDriverEdge, waitFFEdge);
-
-                        if (currentBreakDown.ContainsKey(rewardType))
+                        Search(firefoxDriver, driverWait, Constants.BingSearchURL + wordList[rand.Next(wordList.Count)]);
+                        current += 5;
+                        if (current >= target)
                         {
-                            current = currentBreakDown[rewardType].x;
-                            Console.WriteLine("{0} points of {1} completed", currentBreakDown[rewardType].x, currentBreakDown[rewardType].y);
+                            var currentBreakDown = CheckBreakDown(firefoxDriver, driverWait);
+
+                            if (currentBreakDown.ContainsKey(rewardType))
+                            {
+                                current = currentBreakDown[rewardType].x;
+                                Console.WriteLine("{0} points of {1} completed", currentBreakDown[rewardType].x, currentBreakDown[rewardType].y);
+                            }
                         }
                     }
+                    firefoxDriver.Close();
                 }
-                ffDriverEdge.Close();
             }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                Debug.WriteLine(ex.StackTrace);
+            }
+
         }
 
         private void Search(IWebDriver driver, WebDriverWait wait, string url)
@@ -277,7 +286,7 @@ namespace MSRewards
                 wait.Until(e => e.FindElement(By.Id("b_results")));
 
                 var result = driver.FindElement(By.TagName("h2"));
-                Console.WriteLine(result.Text);
+                Console.WriteLine(result?.Text);
             }
             catch (Exception ex)
             {
