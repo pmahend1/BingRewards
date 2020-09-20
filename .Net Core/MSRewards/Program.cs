@@ -22,18 +22,23 @@ namespace MSRewards
 
         private static async Task Main(string[] args)
         {
-            if (args.Length != 2)
+            if (args.Length < 2 || args.Length >3)
             {
                 Console.WriteLine("Incorrect number of arguments"); ;
-                Console.WriteLine("Usage\n ./MSRewards.exe \"myemail@somedomain.com\" \"mypassword\"");
+                Console.WriteLine("Usage\n ./MSRewards.exe \"myemail@somedomain.com\" \"mypassword\" Y/N(Use Firefox --optional)");
                 return;
             }
             email = args[0];
             password = args[1];
+            bool useFirefox = true;
+            if (args.Length == 2)
+            {
+                useFirefox = args[2] == "Y";
+            }
             try
             {
                 var program = new Program();
-                await program.Run();
+                await program.Run(useFirefox);
             }
             catch (Exception ex)
             {
