@@ -31,9 +31,9 @@ namespace MSRewards
             email = args[0];
             password = args[1];
             bool useFirefox = true;
-            if (args.Length == 2)
+            if (args.Length == 3)
             {
-                useFirefox = args[2] == "Y";
+                useFirefox = args[2] != "N";
             }
             try
             {
