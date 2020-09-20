@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using CommandLine;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Edge;
@@ -11,39 +12,41 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 
 namespace MSRewards
 {
     internal class Program
     {
+        private static async Task RunOptions(Options opts)
+        {
+
+            email = opts.Email;
+            password = opts.Password;
+            bool useFirefox = opts.Firefox;
+
+            var program = new Program();
+            await program.Run(useFirefox);
+        }
+
+        private static void HandleParseError(IEnumerable<Error> errs)
+        {
+
+            foreach (var error in errs)
+            {
+                Console.WriteLine(error.ToString());
+            }
+        }
+
         private static string email, password;
         private List<string> wordList = new List<string>();
 
-        private static async Task Main(string[] args)
+        private static void Main(string[] args)
         {
-            if (args.Length < 2 || args.Length >3)
-            {
-                Console.WriteLine("Incorrect number of arguments"); ;
-                Console.WriteLine("Usage\n ./MSRewards.exe \"myemail@somedomain.com\" \"mypassword\" Y/N(Use Firefox --optional)");
-                return;
-            }
-            email = args[0];
-            password = args[1];
-            bool useFirefox = true;
-            if (args.Length == 3)
-            {
-                useFirefox = args[2] != "N";
-            }
-            try
-            {
-                var program = new Program();
-                await program.Run(useFirefox);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.StackTrace);
-            }
+            Parser.Default.ParseArguments<Options>(args)
+                .WithParsed(async(x)=>await RunOptions(x))
+                .WithNotParsed(HandleParseError);
         }
 
         private T DownloadJsonData<T>(string url) where T : new()
