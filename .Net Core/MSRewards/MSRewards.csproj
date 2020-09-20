@@ -5,6 +5,19 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <StartupObject>MSRewards.Program</StartupObject>
+    <Authors>Prateek Mahendrakar</Authors>
+    <Company />
+    <Description>.NetCore package to automate bing search to get daily search rewards.</Description>
+    <Copyright />
+    <PackageProjectUrl>https://github.com/pmahend1/BingRewards/tree/master/.Net%20Core</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/pmahend1/BingRewards</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Version>1.0.0-alpha</Version>
+    <PackageTags>bing, search, bingrewards, microsoftrewards</PackageTags>
+    <PackageReleaseNotes>Alpha version</PackageReleaseNotes>
+    <NeutralLanguage>en</NeutralLanguage>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,5 +31,9 @@
     <PackageReference Include="Selenium.Firefox.WebDriver" Version="0.27.0" />
     <PackageReference Include="Selenium.Support" Version="4.0.0-alpha05" />
     <PackageReference Include="Selenium.WebDriver" Version="4.0.0-alpha05" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
 </Project>
