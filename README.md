@@ -3,9 +3,9 @@
 Code automate bing search to get daily search rewards.
 
 1. Python
-1. .NetCore(C#)
-
-## Python
+1. .NetCore(C#)  
+   
+## [1] Python
 
 Check out Medium blog [Earn 500+ daily Microsoft rewards points automatically with a simple Python program](https://medium.com/@prateekrm/earn-500-daily-microsoft-rewards-points-automatically-with-a-simple-python-program-38fe648ff2a9) or [GitHub blog](https://pmahend1.github.io/BingRewards/)
 
@@ -34,7 +34,7 @@ Check out Medium blog [Earn 500+ daily Microsoft rewards points automatically wi
     git clone https://github.com/pmahend1/BingRewards
     ```
 
-- Replace `your-email-id` in the code with your enail id.
+- Replace `your-email-id` in the code with your email id.
   
 - Replace `your_password` in the code with your password.
 
@@ -44,24 +44,30 @@ Check out Medium blog [Earn 500+ daily Microsoft rewards points automatically wi
     python get_rewards_firefox_desktop.py
     ```
 
-## .Net Core(C#)
+## [2] .Net Core(C#)
 
 This will run for both PC Search and Mobile points until all the points are gained.
 
 - Build the project via Visual Studio 2019 
-<!---
-- Edit **Resources.json** file to point to respective locations for Edgium. Be sure to have right version of Edgium driver downloaded and pointed based on your existing Edgium version. You can download [Edgium driver from here](https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/)
--->
+
+- Edit **Resources.json** file to point to respective locations for Edge-Chromium. Be sure to have right version of Edgium driver downloaded and pointed based on your existing Edgium version. You can download [Edge-Chromium driver from here.](https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/)
+
 - Run program 
 
-    ```powershell
-    ./MSRewards.exe "myemail@somedomain.com" "mypassword"
+    ``` powershell
+    ./MSRewards.exe -E "myemail@somedomain.com" -P "mypassword" -F
+    ./MSRewards.exe --email "myemail@somedomain.com" --password "mypassword" --use-firefox
     ```
+- Command Parameters  
+    `-E` or `--email`  - email address.  
+    `-P` or `--password`  - password.  
+    `-F` or `--use-firefox`  (Optional) : will use Edge-Chromium if not passed.  
 
 ## Known Issues
 
-- Since release of Edgium(New Microsoft Edge based on Chromium) and subsequent releases of web drivers there may be an issue with Selenium driver run sometimes. Please [raise an issue](https://github.com/pmahend1/BingRewards/issues) to report them.
+- Edge-Chromium's Selenium web driver can have runtime issues sometimes and program execution may stop abruptly. You can [raise an issue](https://github.com/pmahend1/BingRewards/issues) to report them.
+
 
 ## Binaries
 
-- You can download latest binaries from [Releases](https://github.com/pmahend1/BingRewards/releases) and run on Windows. If you build on Linux it should have similar files.
+- You can download latest binaries from [Releases](https://github.com/pmahend1/BingRewards/releases) run on Windows. If you build on Linux or Mac it should have similar files.
