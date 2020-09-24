@@ -99,9 +99,17 @@ namespace MSRewards
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
-                var yesButton = localwait.Until(d => d.FindElement(By.Id(Constants.IdSIButton9)));
+                try
+                {
+                    var yesButton = localwait.Until(d => d.FindElement(By.Id(Constants.IdSIButton9)));
+                    yesButton?.Click();
+                }
+                catch (Exception ex2)
+                {
+                    
+                    Debug.WriteLine(ex2.Message);
+                }
 
-                yesButton?.Click();
             }
 
             await Task.Delay(3000);
