@@ -14,6 +14,20 @@ namespace MSRewards
 
         public const string RememberMeCheckboxName = "KMSI";
 
+        public const string ID_P = "id_p";
+
+        public const string B_Results = "b_results";
+
+        public const string H2 = "h2";
+
+        public const string A = "a";
+
+        public const string IdSIButton9 = "idSIButton9";
+
+        public const string TitleDetailXPath = ".//div[@class='title-detail']";
+
+        public const string PointDetailXpath = ".//p[@class='pointsDetail c-subheading-3 ng-binding']";
+
         public const string RewardsPageTitle = "Microsoft account | Home";
 
         public const string WordsListUrl = "https://raw.githubusercontent.com/bevacqua/correcthorse/master/wordlist.json";
