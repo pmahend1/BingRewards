@@ -81,6 +81,7 @@ namespace MSRewards
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
+                Debug.WriteLine(ex.StackTrace);
             }
             passwordEntry.SendKeys(password);
 
@@ -99,6 +100,7 @@ namespace MSRewards
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
+                Debug.WriteLine(ex.StackTrace);
                 try
                 {
                     var yesButton = localwait.Until(d => d.FindElement(By.Id(Constants.IdSIButton9)));
@@ -106,8 +108,9 @@ namespace MSRewards
                 }
                 catch (Exception ex2)
                 {
-                    
+
                     Debug.WriteLine(ex2.Message);
+                    Debug.WriteLine(ex2.StackTrace);
                 }
 
             }
@@ -177,7 +180,7 @@ namespace MSRewards
                 try
                 {
                     var pointSplits = pointDetailsList.FirstOrDefault()?.Text?.Replace(" ", "").Split("/");
-                    if (pointSplits != null)
+                    if (pointSplits != null && pointSplits?.Length >= 2)
                     {
                         int.TryParse(pointSplits[0].Trim(), out var current);
                         int.TryParse(pointSplits[1].Trim(), out var total);
@@ -197,7 +200,8 @@ namespace MSRewards
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.Message + Environment.NewLine + ex.InnerException?.Message);
+                    Console.WriteLine(ex.Message);
+                    Debug.WriteLine(ex.StackTrace);
                 }
             }
             return result;
@@ -236,7 +240,8 @@ namespace MSRewards
 
                     while (current < target)
                     {
-                        Search(edgeDriver, edgeWait, Constants.BingSearchURL + wordList[rand.Next(wordList.Count)]);
+                        var nextInt = rand.Next(wordList.Count);
+                        Search(edgeDriver, edgeWait, Constants.BingSearchURL + wordList[nextInt <= wordList.Count ? nextInt : 0]);
                         current += 5;
                         if (current >= target)
                         {
@@ -277,7 +282,8 @@ namespace MSRewards
 
                     while (current < target)
                     {
-                        Search(firefoxDriver, driverWait, Constants.BingSearchURL + wordList[rand.Next(wordList.Count)]);
+                        var nextInt = rand.Next(wordList.Count);
+                        Search(firefoxDriver, driverWait, Constants.BingSearchURL + wordList[nextInt <= wordList.Count ? nextInt : 0]);
                         current += 5;
                         if (current >= target)
                         {
@@ -313,7 +319,8 @@ namespace MSRewards
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message + Environment.NewLine + ex.InnerException?.Message);
+                Console.WriteLine(ex.Message);
+                Debug.WriteLine(ex.StackTrace);
             }
         }
     }
