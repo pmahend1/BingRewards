@@ -108,11 +108,9 @@ namespace MSRewards
                 }
                 catch (Exception ex2)
                 {
-
                     Debug.WriteLine(ex2.Message);
                     Debug.WriteLine(ex2.StackTrace);
                 }
-
             }
 
             await Task.Delay(3000);
@@ -221,21 +219,44 @@ namespace MSRewards
                         UseChromium = true,
                     };
 
-                    var edgeDriver = new EdgeDriver(options);
+                    if (rewardType == RewardType.Mobile)
+                        options.AddArgument($"{ Constants.EdgeUserAgentArgument}={Constants.MobileUserAgent}");
 
+                    var edgeDriver = new EdgeDriver(options);
                     edgeDriver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(15);
                     var edgeWait = new WebDriverWait(edgeDriver, TimeSpan.FromSeconds(60));
 
                     await Login(edgeDriver, edgeWait);
 
-                    Search(edgeDriver, edgeWait, Constants.BingSearchURL + "Give me Edge points");
+                    Search(edgeDriver, edgeWait, Constants.BingSearchURL + "Give me Edge points" );
 
-                    await Task.Delay(4000);
+                    await Task.Delay(2000);
 
-                    var id_p = edgeWait.Until(d => d.FindElement(By.Id(Constants.ID_P)));
-                    if (id_p != null)
+                    try
                     {
-                        id_p?.Click();
+                        if (rewardType == RewardType.Mobile)
+                        {
+                            var hamburg = edgeWait.Until(d => d.FindElement(By.Id(Constants.MHamburger)));
+                            hamburg?.Click();
+
+                            var signin = edgeWait.Until(d => d.FindElement(By.Id(Constants.HbS)));
+                            signin?.Click();
+
+                            await Task.Delay(3000);
+                        }
+                        else
+                        {
+                            var id_p = edgeWait.Until(d => d.FindElement(By.Id(Constants.ID_P)));
+                            if (id_p != null)
+                            {
+                                id_p?.Click();
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine(ex.Message);
+                        Debug.WriteLine(ex.StackTrace);
                     }
 
                     while (current < target)
@@ -262,22 +283,47 @@ namespace MSRewards
                 else
                 {
                     var options = new FirefoxOptions();
+                    TimeSpan timeout = TimeSpan.FromSeconds(60);
                     if (rewardType == RewardType.Mobile)
+                    {
                         options.SetPreference(Constants.UserAgentKey, Constants.MobileUserAgent);
+                        timeout = TimeSpan.FromSeconds(30);
+                    }
 
                     options.SetPreference(Constants.PrivateBrowsingKey, true);
                     using var firefoxDriver = new FirefoxDriver(options);
-                    WebDriverWait driverWait = new WebDriverWait(firefoxDriver, TimeSpan.FromSeconds(120));
+                    WebDriverWait driverWait = new WebDriverWait(firefoxDriver, timeout);
                     await Login(firefoxDriver, driverWait);
 
                     firefoxDriver.Navigate().GoToUrl(Constants.BingSearchURL + "Give me edge points");
 
-                    await Task.Delay(4000);
+                    await Task.Delay(2000);
 
-                    var id_p = driverWait.Until(d => d.FindElement(By.Id(Constants.ID_P)));
-                    if (id_p != null)
+                    try
                     {
-                        id_p.Click();
+                        if (rewardType == RewardType.Mobile)
+                        {
+                            var hamburg = driverWait.Until(d => d.FindElement(By.Id(Constants.MHamburger)));
+                            hamburg?.Click();
+
+                            var signin = driverWait.Until(d => d.FindElement(By.Id(Constants.HbS)));
+                            signin?.Click();
+
+                            await Task.Delay(3000);
+                        }
+                        else
+                        {
+                            var id_p = driverWait.Until(d => d.FindElement(By.Id(Constants.ID_P)));
+                            if (id_p != null)
+                            {
+                                id_p.Click();
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine(ex.Message);
+                        Debug.WriteLine(ex.StackTrace);
                     }
 
                     while (current < target)
