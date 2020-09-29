@@ -1,3 +1,5 @@
+using OpenQA.Selenium.DevTools.DOM;
+
 namespace MSRewards
 {
     public static class Constants
@@ -23,6 +25,12 @@ namespace MSRewards
         public const string A = "a";
 
         public const string IdSIButton9 = "idSIButton9";
+
+        public const string EdgeUserAgentArgument = "--user-agent";
+
+        public const string MHamburger = "mHamburger";
+
+        public const string HbS = "hb_s";
 
         public const string TitleDetailXPath = ".//div[@class='title-detail']";
 

@@ -81,6 +81,7 @@ namespace MSRewards
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
+                Debug.WriteLine(ex.StackTrace);
             }
             passwordEntry.SendKeys(password);
 
@@ -99,6 +100,7 @@ namespace MSRewards
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
+                Debug.WriteLine(ex.StackTrace);
                 try
                 {
                     var yesButton = localwait.Until(d => d.FindElement(By.Id(Constants.IdSIButton9)));
@@ -106,10 +108,9 @@ namespace MSRewards
                 }
                 catch (Exception ex2)
                 {
-                    
                     Debug.WriteLine(ex2.Message);
+                    Debug.WriteLine(ex2.StackTrace);
                 }
-
             }
 
             await Task.Delay(3000);
@@ -153,9 +154,9 @@ namespace MSRewards
                 {
                     Console.WriteLine("Starting Bing Search for " + keyvalue.Key);
                     await BingSearch(keyvalue.Key, current, expected, useFirefox);
-                    Environment.Exit(0);
                 }
             }
+            Environment.Exit(0);
         }
 
         private Dictionary<RewardType, (int x, int y)> CheckBreakDown(IWebDriver webDriver, WebDriverWait waiter)
@@ -177,7 +178,7 @@ namespace MSRewards
                 try
                 {
                     var pointSplits = pointDetailsList.FirstOrDefault()?.Text?.Replace(" ", "").Split("/");
-                    if (pointSplits != null)
+                    if (pointSplits != null && pointSplits?.Length >= 2)
                     {
                         int.TryParse(pointSplits[0].Trim(), out var current);
                         int.TryParse(pointSplits[1].Trim(), out var total);
@@ -197,7 +198,8 @@ namespace MSRewards
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.Message + Environment.NewLine + ex.InnerException?.Message);
+                    Console.WriteLine(ex.Message);
+                    Debug.WriteLine(ex.StackTrace);
                 }
             }
             return result;
@@ -217,26 +219,50 @@ namespace MSRewards
                         UseChromium = true,
                     };
 
-                    var edgeDriver = new EdgeDriver(options);
+                    if (rewardType == RewardType.Mobile)
+                        options.AddArgument($"{ Constants.EdgeUserAgentArgument}={Constants.MobileUserAgent}");
 
+                    var edgeDriver = new EdgeDriver(options);
                     edgeDriver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(15);
                     var edgeWait = new WebDriverWait(edgeDriver, TimeSpan.FromSeconds(60));
 
                     await Login(edgeDriver, edgeWait);
 
-                    Search(edgeDriver, edgeWait, Constants.BingSearchURL + "Give me Edge points");
+                    Search(edgeDriver, edgeWait, Constants.BingSearchURL + "Give me Edge points" );
 
-                    await Task.Delay(4000);
+                    await Task.Delay(2000);
 
-                    var id_p = edgeWait.Until(d => d.FindElement(By.Id(Constants.ID_P)));
-                    if (id_p != null)
+                    try
                     {
-                        id_p?.Click();
+                        if (rewardType == RewardType.Mobile)
+                        {
+                            var hamburg = edgeWait.Until(d => d.FindElement(By.Id(Constants.MHamburger)));
+                            hamburg?.Click();
+
+                            var signin = edgeWait.Until(d => d.FindElement(By.Id(Constants.HbS)));
+                            signin?.Click();
+
+                            await Task.Delay(3000);
+                        }
+                        else
+                        {
+                            var id_p = edgeWait.Until(d => d.FindElement(By.Id(Constants.ID_P)));
+                            if (id_p != null)
+                            {
+                                id_p?.Click();
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine(ex.Message);
+                        Debug.WriteLine(ex.StackTrace);
                     }
 
                     while (current < target)
                     {
-                        Search(edgeDriver, edgeWait, Constants.BingSearchURL + wordList[rand.Next(wordList.Count)]);
+                        var nextInt = rand.Next(wordList.Count);
+                        Search(edgeDriver, edgeWait, Constants.BingSearchURL + wordList[nextInt <= wordList.Count ? nextInt : 0]);
                         current += 5;
                         if (current >= target)
                         {
@@ -257,27 +283,53 @@ namespace MSRewards
                 else
                 {
                     var options = new FirefoxOptions();
+                    TimeSpan timeout = TimeSpan.FromSeconds(60);
                     if (rewardType == RewardType.Mobile)
+                    {
                         options.SetPreference(Constants.UserAgentKey, Constants.MobileUserAgent);
+                        timeout = TimeSpan.FromSeconds(30);
+                    }
 
                     options.SetPreference(Constants.PrivateBrowsingKey, true);
                     using var firefoxDriver = new FirefoxDriver(options);
-                    WebDriverWait driverWait = new WebDriverWait(firefoxDriver, TimeSpan.FromSeconds(120));
+                    WebDriverWait driverWait = new WebDriverWait(firefoxDriver, timeout);
                     await Login(firefoxDriver, driverWait);
 
                     firefoxDriver.Navigate().GoToUrl(Constants.BingSearchURL + "Give me edge points");
 
-                    await Task.Delay(4000);
+                    await Task.Delay(2000);
 
-                    var id_p = driverWait.Until(d => d.FindElement(By.Id(Constants.ID_P)));
-                    if (id_p != null)
+                    try
                     {
-                        id_p.Click();
+                        if (rewardType == RewardType.Mobile)
+                        {
+                            var hamburg = driverWait.Until(d => d.FindElement(By.Id(Constants.MHamburger)));
+                            hamburg?.Click();
+
+                            var signin = driverWait.Until(d => d.FindElement(By.Id(Constants.HbS)));
+                            signin?.Click();
+
+                            await Task.Delay(3000);
+                        }
+                        else
+                        {
+                            var id_p = driverWait.Until(d => d.FindElement(By.Id(Constants.ID_P)));
+                            if (id_p != null)
+                            {
+                                id_p.Click();
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine(ex.Message);
+                        Debug.WriteLine(ex.StackTrace);
                     }
 
                     while (current < target)
                     {
-                        Search(firefoxDriver, driverWait, Constants.BingSearchURL + wordList[rand.Next(wordList.Count)]);
+                        var nextInt = rand.Next(wordList.Count);
+                        Search(firefoxDriver, driverWait, Constants.BingSearchURL + wordList[nextInt <= wordList.Count ? nextInt : 0]);
                         current += 5;
                         if (current >= target)
                         {
@@ -313,7 +365,8 @@ namespace MSRewards
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message + Environment.NewLine + ex.InnerException?.Message);
+                Console.WriteLine(ex.Message);
+                Debug.WriteLine(ex.StackTrace);
             }
         }
     }
