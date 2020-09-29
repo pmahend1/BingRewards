@@ -154,9 +154,9 @@ namespace MSRewards
                 {
                     Console.WriteLine("Starting Bing Search for " + keyvalue.Key);
                     await BingSearch(keyvalue.Key, current, expected, useFirefox);
-                    Environment.Exit(0);
                 }
             }
+            Environment.Exit(0);
         }
 
         private Dictionary<RewardType, (int x, int y)> CheckBreakDown(IWebDriver webDriver, WebDriverWait waiter)
