@@ -1,5 +1,3 @@
-using OpenQA.Selenium.DevTools.DOM;
-
 namespace MSRewards
 {
     public static class Constants
