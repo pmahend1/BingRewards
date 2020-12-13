@@ -228,7 +228,7 @@ namespace MSRewards
 
                     await Login(edgeDriver, edgeWait);
 
-                    Search(edgeDriver, edgeWait, Constants.BingSearchURL + "Give me Edge points" );
+                    Search(edgeDriver, edgeWait, Constants.BingSearchURL + "Give me Edge points");
 
                     await Task.Delay(2000);
 
