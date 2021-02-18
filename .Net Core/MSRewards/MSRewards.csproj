@@ -8,10 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.9.0-preview1" />
+    <PackageReference Include="CommandLineParser" Version="2.8.0" />
     <PackageReference Include="Selenium.Firefox.WebDriver" Version="0.27.0" />
-    <PackageReference Include="Selenium.Support" Version="4.0.0-alpha07" />
-    <PackageReference Include="Selenium.WebDriver" Version="4.0.0-alpha07" />
-    <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="89.0.711-pre" />
+    <PackageReference Include="Selenium.Support" Version="4.0.0-beta1" />
+    <PackageReference Include="Selenium.WebDriver" Version="4.0.0-beta1" />
+    <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="88.0.705.56" />
   </ItemGroup>
 </Project>
