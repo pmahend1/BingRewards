@@ -16,6 +16,8 @@ namespace MSRewards
 
         public const string ID_P = "id_p";
 
+        public const string ID_A = "id_a";
+
         public const string B_Results = "b_results";
 
         public const string H2 = "h2";
