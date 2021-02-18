@@ -68,7 +68,7 @@ namespace MSRewards
             username.SendKeys(email);
             username.SendKeys(Keys.Enter);
 
-            await Task.Delay(2000);
+            await Task.Delay(1000);
 
             //page2
             var passwordEntry = localwait?.Until(d => d.FindElement(By.Id(Constants.PasswordEntryId)));
@@ -113,8 +113,6 @@ namespace MSRewards
             }
             finally
             {
-                await Task.Delay(3000);
-
                 if (FindElementSafely(localwait, d => d.Title.Equals(Constants.RewardsPageTitle)))
                 {
                     driverlocal.SwitchTo().DefaultContent();
@@ -141,52 +139,48 @@ namespace MSRewards
 
         private async Task RunAsync(bool useFirefox = false)
         {
-            RemoteWebDriver driver;
-
-            if (useFirefox)
+            try
             {
-                var firefoxOptions = new FirefoxOptions();
-                firefoxOptions.SetPreference(Constants.PrivateBrowsingKey, true);
+                RemoteWebDriver driver;
 
-                driver = new FirefoxDriver(firefoxOptions);
-            }
-            else
-            {
-                DriverOptions driverOptions = new EdgeOptions { UseChromium = true };
-                driver = new EdgeDriver(driverOptions as EdgeOptions);
-            }
-            Dictionary<RewardType, PointStatus> result;
-            using (driver)
-            {
-                WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30));
-                wordList = await DownloadJsonDataAsync<List<string>>(Constants.WordsListUrl);
-
-                await LoginAsync(driver, wait);
-                result = CheckBreakDown(driver, wait);
-
-                // foreach (var keyvalue in result)
-                // {
-                //     var current = keyvalue.Value.Current;
-                //     var expected = keyvalue.Value.Maximum;
-                //     Console.WriteLine($"{keyvalue.Key} : {current} of {expected} completed");
-                //     if (current < expected)
-                //     {
-                //         Console.WriteLine("Starting Bing Search for " + keyvalue.Key);
-                //         await BingSearchAsync(keyvalue.Key, current, expected, useFirefox);
-                //     }
-                // }
-                driver?.Quit();
-            }
-            foreach (var keyvalue in result)
-            {
-                var current = keyvalue.Value.Current;
-                var expected = keyvalue.Value.Maximum;
-                Console.WriteLine($"{keyvalue.Key} : {current} of {expected} completed");
-                if (current < expected)
+                if (useFirefox)
                 {
-                    Console.WriteLine("Starting Bing Search for " + keyvalue.Key);
-                    await BingSearchAsync(keyvalue.Key, current, expected, useFirefox);
+                    var firefoxOptions = new FirefoxOptions();
+                    firefoxOptions.SetPreference(Constants.PrivateBrowsingKey, true);
+
+                    driver = new FirefoxDriver(firefoxOptions);
                 }
+                else
+                {
+                    DriverOptions driverOptions = new EdgeOptions { UseChromium = true };
+                    driver = new EdgeDriver(driverOptions as EdgeOptions);
+                }
+                Dictionary<RewardType, PointStatus> result;
+                using (driver)
+                {
+                    WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30));
+                    wordList = await DownloadJsonDataAsync<List<string>>(Constants.WordsListUrl);
+
+                    await LoginAsync(driver, wait);
+                    result = CheckBreakDown(driver, wait);
+
+                    driver?.Quit();
+                }
+                foreach (var keyvalue in result)
+                {
+                    var current = keyvalue.Value.Current;
+                    var expected = keyvalue.Value.Maximum;
+                    Console.WriteLine($"{keyvalue.Key} : {current} of {expected} completed");
+                    if (current < expected)
+                    {
+                        Console.WriteLine("Starting Bing Search for " + keyvalue.Key);
+                        await BingSearchAsync(keyvalue.Key, current, expected, useFirefox);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.StackTrace);
             }
         }
 
@@ -256,7 +250,6 @@ namespace MSRewards
 
                     using (var edgeDriver = new EdgeDriver(options))
                     {
-                        //edgeDriver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(15);
                         var edgeWait = new WebDriverWait(edgeDriver, TimeSpan.FromSeconds(30));
 
                         await LoginAsync(edgeDriver, edgeWait);
@@ -351,7 +344,7 @@ namespace MSRewards
                                 var signin = driverWait.Until(d => d.FindElement(By.Id(Constants.HbS)));
                                 signin?.Click();
 
-                                await Task.Delay(3000);
+                                await Task.Delay(1500);
                             }
                             else
                             {
@@ -361,7 +354,7 @@ namespace MSRewards
                                     if (id_p != null)
                                         id_p.Click();
                                 }
-                                catch (System.Exception ex)
+                                catch (Exception ex)
                                 {
                                     Debug.WriteLine(ex.Message);
                                     Debug.WriteLine(ex.StackTrace);
