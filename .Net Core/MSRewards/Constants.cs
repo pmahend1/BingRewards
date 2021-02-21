@@ -46,7 +46,7 @@ namespace MSRewards
 
         public const string UserAgentKey = "general.useragent.override";
 
-        public const string MobileUserAgent = @"Mozilla/5.0 (Android 10; Mobile; rv:81.0) Gecko/81.0 Firefox/81.0";
+        public const string MobileUserAgent = @"Mozilla/5.0 (Android 10; Mobile; rv:86.0) Gecko/81.0 Firefox/86.0";
 
         public const string PrivateBrowsingKey = "browser.privatebrowsing.autostart";
 

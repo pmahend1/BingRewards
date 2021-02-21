@@ -16,6 +16,7 @@ namespace MSRewards
 {
     internal class Program
     {
+        static Random rand = new Random();
         private static async Task RunOptions(Options opts)
         {
             email = opts.Email;
@@ -234,7 +235,7 @@ namespace MSRewards
         {
             try
             {
-                var rand = new Random();
+               
                 wordList = await DownloadJsonDataAsync<List<string>>(Constants.WordsListUrl);
 
                 //Edge browser
@@ -296,7 +297,7 @@ namespace MSRewards
 
                         while (current < target)
                         {
-                            var nextInt = rand.Next(wordList.Count);
+                            var nextInt = rand.Next(wordList.Count+1);
                             Search(edgeDriver, edgeWait, Constants.BingSearchURL + wordList[nextInt <= wordList.Count ? nextInt : 0]);
                             current += 5;
                             if (current >= target)
@@ -319,10 +320,7 @@ namespace MSRewards
                     var options = new FirefoxOptions();
                     TimeSpan timeout = TimeSpan.FromSeconds(60);
                     if (rewardType == RewardType.Mobile)
-                    {
                         options.SetPreference(Constants.UserAgentKey, Constants.MobileUserAgent);
-                        timeout = TimeSpan.FromSeconds(30);
-                    }
 
                     options.SetPreference(Constants.PrivateBrowsingKey, true);
                     using (var firefoxDriver = new FirefoxDriver(options))
@@ -372,7 +370,7 @@ namespace MSRewards
 
                         while (current < target)
                         {
-                            var nextInt = rand.Next(wordList.Count);
+                            var nextInt = rand.Next(wordList.Count+1);
                             Search(firefoxDriver, driverWait, Constants.BingSearchURL + wordList[nextInt <= wordList.Count ? nextInt : 0]);
                             current += 5;
                             if (current >= target)
