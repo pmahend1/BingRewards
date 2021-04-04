@@ -16,6 +16,8 @@ namespace MSRewards
 
         public const string ID_P = "id_p";
 
+        public const string ID_L = "id_l";
+
         public const string ID_A = "id_a";
 
         public const string B_Results = "b_results";
@@ -41,6 +43,8 @@ namespace MSRewards
         public const string WordsListUrl = "https://raw.githubusercontent.com/bevacqua/correcthorse/master/wordlist.json";
 
         public const string BingSearchURL = "http://www.bing.com/search?q=";
+
+        public const string BingHome = "http://www.bing.com/"; 
 
         public const string GeckoPathKey = "webdriver.gecko.driver";
 
